@@ -7,6 +7,7 @@ import { ToastContainer } from 'react-toastify';
 import App from "./App";
 import Signup from "./pages/Signup";
 import Signin from './pages/Signin';
+import Stats from "./pages/Stats";
 import theme from "./theme";
 
 const PrivateRoute = ({ element, ...props }) => {
@@ -38,6 +39,10 @@ root.render(
           />
           <Route path="/signup" element={<Signup />} />
           <Route path="/signin" element={<Signin />} />
+          <Route
+            path="/dashboard"
+            element={<PrivateRoute element={<Stats />} />}
+          />
         </Routes>
       </div>
     </Router>
