@@ -15,8 +15,66 @@ mapboxgl.accessToken =
   "pk.eyJ1IjoibmlnaHQ1MzQwIiwiYSI6ImNsbzhrcnV6MDAydjIya25uZmd3cDZyaGYifQ.XU2Vf6GFyBITezb9gXHVdQ"; // Replace with your Mapbox access token
 const jyvaskylaCenter = [25.7446, 62.2415]; // Jyväskylä, Finland coordinates
 const zoomLevel = 12; // Preferred zoom level
+const crops = [
+  "Almonds",
+  "AloeVera",
+  "Apricots",
+  "Avacado",
+  "bamboo",
+  "Bananas",
+  "Barley",
+  "Beets",
+  "BlackPepper",
+  "Cabbage",
+  "Cactus",
+  "Cardamom",
+  "Carrots",
+  "Chickpeas",
+  "Cocoa",
+  "Coffee",
+  "Corn",
+  "Cotton",
+  "Dates",
+  "Eggplant",
+  "Figs",
+  "Ginger",
+  "Grapes",
+  "Jackfruit",
+  "Kale",
+  "Lentils",
+  "Mango",
+  "Mustard",
+  "Oats",
+  "Okra",
+  "Olives",
+  "Papaya",
+  "Parsnips",
+  "Peaches",
+  "Peppers",
+  "Pineapple",
+  "Pistachios",
+  "Pomegranates",
+  "Potatoes",
+  "Quinoa",
+  "Radish",
+  "Rice",
+  "Rubber",
+  "Rye",
+  "Sorghum",
+  "Spinach",
+  "Sprouts",
+  "Sugarcane",
+  "Sunflower",
+  "Tapioca",
+  "Tea",
+  "Tomatoes",
+  "Turmeric",
+  "Turnips",
+  "Vanilla",
+  "Wheat",
+];
 
-const MapWithDraw = () => {
+const MapWithDraw = ({fetchedPolygons, setFetchedPolygons, loadPolygonsFromAPI}) => {
   const mapContainerRef = useRef(null);
   const [map, setMap] = useState(null);
   const [draw, setDraw] = useState(null);
@@ -25,18 +83,20 @@ const MapWithDraw = () => {
     date: new Date().toISOString().split("T")[0],
   });
 
-  const [fetchedPolygons, setFetchedPolygons] = useState([]);
+  // const [fetchedPolygons, setFetchedPolygons] = useState([]);
 
-  const loadPolygonsFromAPI = async () => {
-    try {
-      const savedData = await localStorage.getItem("pusheralsUser");
-      let parsedUser = JSON.parse(savedData)
-      const response = await axios.get(`http://localhost:4000/user/getPolygons/${parsedUser.id}`);
-      setFetchedPolygons(response.data.data);
-    } catch (error) {
-      console.error("Error fetching data from API:", error);
-    }
-  };
+  // const loadPolygonsFromAPI = async () => {
+  //   try {
+  //     const savedData = await localStorage.getItem("pusheralsUser");
+  //     let parsedUser = JSON.parse(savedData);
+  //     const response = await axios.get(
+  //       `http://localhost:4000/user/getPolygons/${parsedUser.id}`
+  //     );
+  //     setFetchedPolygons(response.data.data);
+  //   } catch (error) {
+  //     console.error("Error fetching data from API:", error);
+  //   }
+  // };
 
   const handleDropdownChange = (event) => {
     setSelectedOption({
@@ -52,12 +112,11 @@ const MapWithDraw = () => {
     });
   };
 
-
   const sendToBackend = () => {
     if (draw && map) {
       const data = draw.getAll();
       const savedData = localStorage.getItem("pusheralsUser");
-      let parsedUser = JSON.parse(savedData)
+      let parsedUser = JSON.parse(savedData);
       // Example fetch request
       axios
         .post("http://localhost:4000/user/savePolygon", {
@@ -117,14 +176,15 @@ const MapWithDraw = () => {
     }
   };
 
-  useEffect(() => {
-    // Fetch polygons from the API on the first load
-    loadPolygonsFromAPI();
-  }, []); // Run the effect only once on mount
+  // useEffect(() => {
+  //   // Fetch polygons from the API on the first load
+  //   loadPolygonsFromAPI();
+  // }, []); // Run the effect only once on mount
 
   const loadPolygons = () => {
+    console.log("data before: ", fetchedPolygons);
     let parsedPolygons = fetchedPolygons[0]?.features[0];
-    console.log("parsed: ", parsedPolygons)
+    console.log("parsed: ", parsedPolygons);
     return parsedPolygons;
   };
 
@@ -183,11 +243,9 @@ const MapWithDraw = () => {
         <div style={{ display: "flex" }}>
           <FormControl>
             <Select value={selectedOption.crop} onChange={handleDropdownChange}>
-              <MenuItem value="wheat">Wheat</MenuItem>
-              <MenuItem value="potato">Potato</MenuItem>
-              <MenuItem value="rice">Rice</MenuItem>
-              <MenuItem value="corn">Corn</MenuItem>
-              {/* Add more options as needed */}
+              {crops.map((e) => {
+                return <MenuItem value={e}>{e}</MenuItem>;
+              })}
             </Select>
           </FormControl>
           <FormControl>

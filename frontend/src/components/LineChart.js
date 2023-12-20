@@ -9,25 +9,24 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
 } from "chart.js";
-import { Line } from "react-chartjs-2";
-//   import faker from 'faker';
+import { Bar } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
 );
 
-export const options = {
+const options = {
   responsive: true,
   plugins: {
     legend: {
@@ -35,29 +34,9 @@ export const options = {
     },
     title: {
       display: true,
-      text: "Chart.js Line Chart",
+      text: "Grouped Bar Chart",
     },
   },
-};
-
-const labels = ["January", "February", "March", "April", "May", "June", "July"];
-
-export const data2 = {
-  labels,
-  datasets: [
-    {
-      label: "Dataset 1",
-      data: [32, 45, 64, 64, 23, 64, 89],
-      borderColor: "rgb(255, 99, 132)",
-      backgroundColor: "rgba(255, 99, 132, 0.5)",
-    },
-    {
-      label: "Dataset 2",
-      data: [32, 45, 64, 64, 23, 64, 89].reverse(),
-      borderColor: "rgb(53, 162, 235)",
-      backgroundColor: "rgba(53, 162, 235, 0.5)",
-    },
-  ],
 };
 
 const ChartComponent = ({ title }) => {
@@ -87,6 +66,52 @@ const ChartComponent = ({ title }) => {
   if (!data) {
     return <div>Loading...</div>;
   }
+  // Function to group data by Crop_Names
+  const groupedData = data.reduce((result, record) => {
+    const cropName = record.Crop_Names;
+    if (!result[cropName]) {
+      result[cropName] = [];
+    }
+    result[cropName].push(record);
+    return result;
+  }, {});
+
+  const colors = [
+    "rgb(255, 99, 132)",
+    "rgb(75, 192, 192)",
+    "rgb(53, 162, 235)",
+  ];
+
+  // const labels = [
+  //   "Growth_Stage",
+  //   "Avg_Temperature",
+  //   "User_Field_Capacity",
+  //   "Ideal_Field_Capacity",
+  //   "Ideal_Soil_Roughness_Threshold",
+  //   "Max_Months",
+  //   "Soil_Roughness",
+  // ];
+
+  const labels = [
+    "avgTemperature",
+    "idealFieldCapacity",
+    "idealSoilMoisture",
+    "idealSoilRoughnessThreshold",
+    "maxMonths",
+    "minMonths",
+    "soilRoughness",
+    "stageIdentifier",
+    "stageNumber",
+    "type",
+    "userFieldCapacity",
+  ];
+
+  // Preparing datasets for the chart
+  const datasets = data.map((item, index) => ({
+    label: item.cropName,
+    data: labels.map((label) => item[label]),
+    backgroundColor: colors[index % colors.length], // Use the colors in a cyclic manner
+  }));
 
   return (
     <Card sx={{ marginBottom: "16px" }}>
@@ -94,7 +119,25 @@ const ChartComponent = ({ title }) => {
         <Typography variant="h6" gutterBottom>
           {title}
         </Typography>
-        <Line options={options} data={data2} />
+        <Bar
+          options={options}
+          data={{
+            labels: [
+              "avgTemperature",
+              "idealFieldCapacity",
+              "idealSoilMoisture",
+              "idealSoilRoughnessThreshold",
+              "maxMonths",
+              "minMonths",
+              "soilRoughness",
+              "stageIdentifier",
+              "stageNumber",
+              "type",
+              "userFieldCapacity",
+            ],
+            datasets,
+          }}
+        />
       </CardContent>
     </Card>
   );

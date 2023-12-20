@@ -2,6 +2,10 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 
+const { getTemperatureInfo } = require("../services/temperature");
+const { getSoilInfo } = require("../services/soilMoisture");
+const { runSparqlQuery } = require("../services/sparqlClient");
+
 // Define a MongoDB schema for polygon data
 const polygonSchema = new mongoose.Schema({
   userId: String,
@@ -105,23 +109,80 @@ router.get("/finalDataset/crops/:userId", async (req, res) => {
     // Fetch polygon data from MongoDB based on userId
     const userPolygons = await Polygon.findOne({ userId: userId });
 
-    // const { Crop_Name } = req.body;
+    // Validate if Crop_Name is provided
+    if (!userPolygons) {
+      return res.status(422).json({ error: "User polygons not found" });
+    }
+
+    let finalResponse = [];
+
+    // Fetch records based on the provided Crop_Name
+    const records = await FinalDataset.find({
+      Crop_Names: { $in: userPolygons.crop.map((e) => e?.crop) },
+    });
+
+    for (let i of userPolygons.crop) {
+      const elapsedMonths = calculateElapsedMonths(i.date);
+      // query dhruv endpoint run it here.
+      // pass him the cropname and elapsed time
+
+      console.log("i: ", i);
+      let sparqlResponse = await runSparqlQuery(i?.crop, elapsedMonths);
+      console.log("sparql response: ", sparqlResponse);
+      // // let filteredCrops = records.filter((e) => e.Crop_Names == i.crop);
+      // // if (filteredCrops.length) {
+      // //   const nearestRecord = filteredCrops.reduce((prev, current) => {
+      // //     const prevDifference = Math.abs(prev.Max_Months - elapsedMonths);
+      // //     const currentDifference = Math.abs(
+      // //       current.Max_Months - elapsedMonths
+      // //     );
+
+      // //     return currentDifference < prevDifference ? current : prev;
+      // //   });
+
+        finalResponse.push(...sparqlResponse);
+      // }
+    }
+
+    res.status(200).json(finalResponse.filter(e => e));
+  } catch (error) {
+    console.error("Error fetching polygon data:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// Fetch user polygon data
+router.get("/soilTemperature/:userId", async (req, res) => {
+  try {
+
+    let finalResponse = [];
+    const userId = req.params.userId;
+    const userPolygons = await Polygon.findOne({ userId: userId });
 
     // Validate if Crop_Name is provided
     if (!userPolygons) {
       return res.status(422).json({ error: "User polygons not found" });
     }
 
-    console.log("user polygons: ", userPolygons)
-    // Fetch records based on the provided Crop_Name
-    const records = await FinalDataset.find({
-      Crop_Names: { $in: userPolygons.crop.map((e) => e?.crop) },
-    });
-    res.status(200).json(records);
+    for (let i of userPolygons.features[0]?.features) {
+      let coordinates = i?.geometry?.coordinates[0][0];
+      const temperature = await getTemperatureInfo(coordinates[1], coordinates[0]);
+      const soil = await getSoilInfo(coordinates[1], coordinates[0]);
+      finalResponse.push({temperature, soil});
+    }
+    res.status(200).json(finalResponse);
   } catch (error) {
-    console.error("Error fetching polygon data:", error);
+    console.error("Error fetching temperature data:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
+
+// Calculate elapsed months since a given date
+const calculateElapsedMonths = (givenDate) => {
+  const currentDate = new Date();
+  const differenceInMonths =
+    (currentDate - new Date(givenDate)) / (30 * 24 * 60 * 60 * 1000);
+  return Math.max(0, differenceInMonths);
+};
 
 module.exports = router;

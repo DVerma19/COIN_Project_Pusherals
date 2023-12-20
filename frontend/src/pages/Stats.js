@@ -8,6 +8,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Container from "@mui/material/Container";
 import ChartComponent from "../components/LineChart";
 import FloodPrediction from "../components/FloodPrediction";
+import YieldPrediction from "../components/Yield"
 
 const chartData1 = [
   { name: "Jan", value: 2400 },
@@ -86,11 +87,15 @@ const Stats = () => {
         >
           <Tab
             label="Crop Information"
-            sx={{ color: value === 0 ? "#A63626" : "#ffffff" }}
+            sx={{ color: value === 0 ? "#2CD6F4" : "#ffffff" }}
           />
           <Tab
             label="Flood Predictions"
-            sx={{ color: value === 2 ? "#A63626" : "#ffffff" }}
+            sx={{ color: value === 1 ? "#2CD6F4" : "#ffffff" }}
+          />
+          <Tab
+            label="Yield Predictions"
+            sx={{ color: value === 1 ? "#2CD6F4" : "#ffffff" }}
           />
         </Tabs>
         <TabPanel value={value} index={0}>
@@ -109,6 +114,15 @@ const Stats = () => {
             }}
           >
             <FloodPrediction />
+          </Box>
+        </TabPanel>
+        <TabPanel value={value} index={2}>
+          <Box
+            sx={{
+              minWidth: "100vh",
+            }}
+          >
+            <YieldPrediction />
           </Box>
         </TabPanel>
       </Box>
