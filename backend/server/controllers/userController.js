@@ -162,13 +162,43 @@ router.get("/soilTemperature/:userId", async (req, res) => {
     // Validate if Crop_Name is provided
     if (!userPolygons) {
       return res.status(422).json({ error: "User polygons not found" });
-    }
-
-    for (let i of userPolygons.features[0]?.features) {
+    } 
+    
+    for (let index = 0; index < userPolygons.features[0]?.features.length; index++) {
+      let i = userPolygons.features[0]?.features[index];
       let coordinates = i?.geometry?.coordinates[0][0];
       const temperature = await getTemperatureInfo(coordinates[1], coordinates[0]);
       const soil = await getSoilInfo(coordinates[1], coordinates[0]);
-      finalResponse.push({temperature, soil});
+    
+      let cropName = userPolygons.crop[index];
+      console.log("cropName: ", userPolygons, index);
+      const elapsedMonths = calculateElapsedMonths(cropName.date);
+      let sparqlResponse = await runSparqlQuery(cropName.crop, elapsedMonths);
+      let cropData;
+      if (sparqlResponse.length) {
+        cropData = sparqlResponse[0];
+      }
+    
+      let finalResult = Object.keys(temperature).map(e => {
+        let obj = {
+          Crop_Names: cropData.cropName,
+          Growth_Stage: cropData.stageNumber,
+          Avg_Temperature: cropData.avgTemperature,
+          User_Field_Capacity: cropData.userFieldCapacity,
+          Ideal_Field_Capacity: cropData.idealFieldCapacity,
+          Ideal_Soil_Roughness_Threshold: cropData.idealSoilRoughnessThreshold,
+          Ideal_Soil_Moisture: cropData.idealSoilMoisture,
+          Type: cropData.type,
+          User_Soil_Roughness: cropData.soilRoughness,
+          User_Soil_Moisture: soil[e],
+          User_Temperature: temperature[e].temperature,
+          Date: e,
+        };
+        return obj;
+      });
+    
+      // console.log("final result: ", finalResult);
+      finalResponse.push(finalResult);
     }
     res.status(200).json(finalResponse);
   } catch (error) {

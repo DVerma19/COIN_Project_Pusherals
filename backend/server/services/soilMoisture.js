@@ -5,23 +5,35 @@ const apiKey =
 
 const getSoilInfo = async (latitude, longitude) => {
   try {
-
     // calculate average moisture
-       //   const average_moisture = moisture / count;
+    //   const average_moisture = moisture / count;
     //   console.log(`${date}: ${average_moisture.toFixed(2)} (average moisture)`);
     return {
-      20122023: { moisture: 9.680000000000001, count: 22 },
-      21122023: { moisture: 10.56, count: 24 },
-      22122023: { moisture: 10.56, count: 24 },
-      23122023: { moisture: 10.56, count: 24 },
-      24122023: { moisture: 10.56, count: 24 },
-      25122023: { moisture: 10.56, count: 24 },
-      26122023: { moisture: 10.56, count: 24 },
-      27122023: { moisture: 10.56, count: 24 },
-      28122023: { moisture: 10.56, count: 24 },
-      29122023: { moisture: 10.56, count: 24 },
-      30122023: { moisture: 1.32, count: 3 },
+      20122023: "0.44",
+      21122023: "0.44",
+      22122023: "0.44",
+      23122023: "0.44",
+      24122023: "0.44",
+      25122023: "0.44",
+      26122023: "0.44",
+      27122023: "0.44",
+      28122023: "0.44",
+      29122023: "0.44",
+      30122023: "0.44",
     };
+    // return {
+    //   20122023: { moisture: 9.680000000000001, count: 22 },
+    //   21122023: { moisture: 10.56, count: 24 },
+    //   22122023: { moisture: 10.56, count: 24 },
+    //   23122023: { moisture: 10.56, count: 24 },
+    //   24122023: { moisture: 10.56, count: 24 },
+    //   25122023: { moisture: 10.56, count: 24 },
+    //   26122023: { moisture: 10.56, count: 24 },
+    //   27122023: { moisture: 10.56, count: 24 },
+    //   28122023: { moisture: 10.56, count: 24 },
+    //   29122023: { moisture: 10.56, count: 24 },
+    //   30122023: { moisture: 1.32, count: 3 },
+    // };
 
     // let startDate = new Date();
 

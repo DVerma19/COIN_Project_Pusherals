@@ -118,6 +118,7 @@ const MapWithDraw = ({fetchedPolygons, setFetchedPolygons, loadPolygonsFromAPI})
       const savedData = localStorage.getItem("pusheralsUser");
       let parsedUser = JSON.parse(savedData);
       // Example fetch request
+
       axios
         .post("http://localhost:4000/user/savePolygon", {
           selectedOption,
@@ -132,6 +133,7 @@ const MapWithDraw = ({fetchedPolygons, setFetchedPolygons, loadPolygonsFromAPI})
           // Add any additional logic here based on the backend response
         })
         .catch((error) => {
+          toast.error('You reached capacity of 3 crops', { autoClose: 3000 });
           console.error("Error sending data to backend:", error);
         });
     }

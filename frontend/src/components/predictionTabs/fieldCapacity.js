@@ -5,55 +5,55 @@ import HighchartsReact from 'highcharts-react-official';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import {fieldCapacityPredict} from "../../utils/index";
 
-const ChartComponent = ({ title }) => {
+const ChartComponent = ({ title, data }) => {
+    const [cropType, setCropType] = useState("");
+    const [types, setTypes] = useState([]);
   const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/user/getFloods");
-        const data = response.data;
-        processChartData(data);
+        let cropsTitle = data.map(e => e[0]['Crop_Names']);
+        setTypes(cropsTitle);
+        setCropType(cropsTitle[0]);
+        let formattedData = fieldCapacityPredict(data[0]);
+        processChartData(formattedData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-
     fetchData();
   }, []);
 
+  const handleDropdownChange = (event) => {
+    setCropType(event.target.value);
+    let index = types.indexOf(event.target.value)
+    let formattedData = fieldCapacityPredict(data[index]);
+    processChartData(formattedData)
+  };
+
   const processChartData = (data) => {
-    const categories = data.data.data.time.map(e => e.slice(5).replace("-", "/"));
-    console.log("categories; ", categories);
+    console.log("Data: ", data)
+    const categories = data.map(e => e.Date);
     const series = [
       {
-        name: 'River Discharge m³/s',
-        visible: false,
-        data: data.data.data.river_discharge,
+        name: 'Predicted Yield',
+        data: data.map(e => e.PredictedYield),
         color: 'rgb(255, 99, 132)'
       },
       {
-        name: 'Mean River Discharge m³/s',
-        visible: false,
-        data: data.data.data.river_discharge_mean,
+        name: 'Practical Max',
+        data: data.map(e => e.PracticalMax),
         color: 'rgb(53, 162, 235)'
       },
       {
-        name: 'Median River Discharge m³/s',
-        visible: false,
-        data: data.data.data.river_discharge_median,
+        name: 'Ideal Yield',
+        data: data.map(e => e.IdealYield),
         color: 'rgb(75, 192, 192)'
-      },
-      {
-        name: 'Max River Discharge m³/s',
-        data: data.data.data.river_discharge_max,
-        color: 'rgb(255, 205, 86)'
-      },
-      {
-        name: 'Min River Discharge m³/s',
-        data: data.data.data.river_discharge_min,
-        color: 'rgb(54, 162, 235)'
       }
     ];
     
@@ -68,30 +68,15 @@ const ChartComponent = ({ title }) => {
 
   const options = {
     chart: {
-      type: 'area'
+      type: 'column'
     },
     title: {
       text: title
     },
     yAxis: {
       title: {
-        text: 'Discharge m³/s'
+        text: 'Yield'
       },
-      max: 25,
-      plotLines: [{
-        color: 'black',
-        width: 2,
-        value: 22,
-        animation: {
-            duration: 1000,
-            defer: 4000
-        },
-        label: {
-            text: 'Flood Warning',
-            align: 'right',
-            x: -20
-        }
-    }]
     },
     plotOptions: {
       line: {
@@ -113,6 +98,17 @@ const ChartComponent = ({ title }) => {
         <Typography variant='h6' gutterBottom>
           {title}
         </Typography>
+        <TextField
+          select
+          label="Select Crop Type"
+          value={cropType}
+          onChange={handleDropdownChange}
+          sx={{ marginBottom: '16px' }}
+        >
+            {types.map(e => {
+                return <MenuItem value={e}>{e}</MenuItem>
+            })}
+        </TextField>
         <HighchartsReact highcharts={Highcharts} options={options} />
       </CardContent>
     </Card>
